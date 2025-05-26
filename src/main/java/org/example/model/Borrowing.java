@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-//Encja reprezentująca wypożyczenie książki w aplikacji księgarni. Relacja miedzy ksiazkami a userami.
+// tabela reprezentujaca wypozyczenie ksiazki w aplikacji ksiegarni. Relacja miedzy ksiazkami a userami.
 @Entity
 @Table(name = "borrowings")
 public class Borrowing {
@@ -20,7 +20,7 @@ public class Borrowing {
 
     @ManyToOne
     @JoinColumn(name = "book_id", nullable = false)
-    private Book book;
+    private AbstractBook book; //zmiana na polimorfizm
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -45,7 +45,7 @@ public class Borrowing {
     // konstruktory
     public Borrowing() {}
 
-    public Borrowing(User user, Book book, BorrowingStatus status, LocalDate borrowDate, LocalDate dueDate) {
+    public Borrowing(User user, AbstractBook book, BorrowingStatus status, LocalDate borrowDate, LocalDate dueDate) {
         this.user = user;
         this.book = book;
         this.status = status;
@@ -55,7 +55,7 @@ public class Borrowing {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Gettery i settery
+    // gettery i settery
 
     public Long getId() {
         return id;
@@ -73,11 +73,11 @@ public class Borrowing {
         this.user = user;
     }
 
-    public Book getBook() {
+    public AbstractBook getBook() {
         return book;
     }
 
-    public void setBook(Book book) {
+    public void setBook(AbstractBook book) {
         this.book = book;
     }
 
