@@ -1,13 +1,29 @@
 package org.example.dataTransfer;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 // klasa dla operacji na ksiazkach (tworzenie/aktualizacja)
+@Schema(description = "Book creation/update request")
 public class BookRequest {
+
+    @Schema(description = "Book title", example = "The Great Gatsby", required = true)
     private String title;
+
+    @Schema(description = "Author name", example = "F. Scott Fitzgerald", required = true)
     private String author;
+
+    @Schema(description = "Publication year", example = "1925")
     private Integer publicationYear;
+
+    @Schema(description = "Book genre", example = "Fiction")
     private String genre;
+
+    @Schema(description = "Total number of copies", example = "5", required = true)
     private Integer totalCopies;
-    private String bookType; // PHYSICAL, EBOOK, AUDIOBOOK
+
+    @Schema(description = "Book type", example = "PHYSICAL", 
+            allowableValues = {"PHYSICAL", "EBOOK", "AUDIOBOOK"})
+    private String bookType;
 
     // konstruktor domyslny
     public BookRequest() {}

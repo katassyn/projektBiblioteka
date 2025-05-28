@@ -1,5 +1,12 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.model.Borrowing;
 import org.example.service.BorrowingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +21,8 @@ import java.util.Map;
 // kontroler do zarzadzania wypozyczeniami
 @RestController
 @RequestMapping("/api/borrowings")
+@Tag(name = "Borrowings", description = "Book borrowing and return operations")
+@SecurityRequirement(name = "basicAuth")
 public class BorrowingController {
 
     private final BorrowingService borrowingService;
@@ -23,9 +32,15 @@ public class BorrowingController {
         this.borrowingService = borrowingService;
     }
 
-    // wypozycza ksiazke (dostepne dla uwierzytelnionych uzytkownikow)
+    // wypozycza ksiazke
     @PostMapping("/borrow/{bookId}")
-    public ResponseEntity<?> borrowBook(@PathVariable Long bookId) {
+    @Operation(summary = "Borrow a book", description = "Borrow a book for the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book borrowed successfully"),
+            @ApiResponse(responseCode = "400", description = "Book not available or already borrowed by user")
+    })
+    public ResponseEntity<?> borrowBook(
+            @Parameter(description = "Book ID to borrow", required = true) @PathVariable Long bookId) {
         try {
             Borrowing borrowing = borrowingService.borrowBook(bookId);
             return ResponseEntity.ok(borrowing);
@@ -36,9 +51,15 @@ public class BorrowingController {
         }
     }
 
-    // zwraca ksiazke (dostepne dla uwierzytelnionych uzytkownikow)
+    // zwraca ksiazke
     @PostMapping("/return/{borrowingId}")
-    public ResponseEntity<?> returnBook(@PathVariable Long borrowingId) {
+    @Operation(summary = "Return a book", description = "Return a borrowed book")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book returned successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid borrowing ID or book already returned")
+    })
+    public ResponseEntity<?> returnBook(
+            @Parameter(description = "Borrowing ID to return", required = true) @PathVariable Long borrowingId) {
         try {
             Borrowing borrowing = borrowingService.returnBook(borrowingId);
             Map<String, Object> response = new HashMap<>();
@@ -52,21 +73,31 @@ public class BorrowingController {
         }
     }
 
-    // zwraca historie wypozyczen uzytkownika (dostepne dla uwierzytelnionych uzytkownikow)
+    // zwraca historie wypozyczen uzytkownika
     @GetMapping("/my-history")
+    @Operation(summary = "Get user borrowing history", description = "Returns all borrowings for the authenticated user")
+    @ApiResponse(responseCode = "200", description = "Borrowing history retrieved successfully")
     public List<Borrowing> getUserBorrowingHistory() {
         return borrowingService.getUserBorrowingHistory();
     }
 
-    // zwraca aktywne wypozyczenia uzytkownika (dostepne dla uwierzytelnionych uzytkownikow)
+    // zwraca aktywne wypozyczenia uzytkownika
     @GetMapping("/my-active")
+    @Operation(summary = "Get user active borrowings", description = "Returns active borrowings for the authenticated user")
+    @ApiResponse(responseCode = "200", description = "Active borrowings retrieved successfully")
     public List<Borrowing> getUserActiveBorrowings() {
         return borrowingService.getUserActiveBorrowings();
     }
 
-    // zwraca wypozyczenie po ID (dostepne dla uwierzytelnionych uzytkownikow)
+    // zwraca wypozyczenie po ID
     @GetMapping("/{id}")
-    public ResponseEntity<Borrowing> getBorrowingById(@PathVariable Long id) {
+    @Operation(summary = "Get borrowing by ID", description = "Returns a specific borrowing by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Borrowing found"),
+            @ApiResponse(responseCode = "404", description = "Borrowing not found")
+    })
+    public ResponseEntity<Borrowing> getBorrowingById(
+            @Parameter(description = "Borrowing ID", required = true) @PathVariable Long id) {
         return borrowingService.getBorrowingById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -75,6 +106,11 @@ public class BorrowingController {
     // zwraca wszystkie wypozyczenia (tylko admin)
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all borrowings", description = "Returns all borrowings in the system (Admin only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "All borrowings retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
     public List<Borrowing> getAllBorrowings() {
         return borrowingService.getAllBorrowings();
     }
@@ -82,6 +118,11 @@ public class BorrowingController {
     // zwraca przeterminowane wypozyczenia (tylko admin)
     @GetMapping("/overdue")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get overdue borrowings", description = "Returns all overdue borrowings (Admin only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Overdue borrowings retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
     public List<Borrowing> getOverdueBorrowings() {
         return borrowingService.getOverdueBorrowings();
     }
@@ -89,6 +130,12 @@ public class BorrowingController {
     // aktualizuje przeterminowane wypozyczenia (tylko admin)
     @PostMapping("/update-overdue")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update overdue borrowings", description = "Updates status of overdue borrowings (Admin only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Overdue borrowings updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Failed to update overdue borrowings"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
     public ResponseEntity<?> updateOverdueBorrowings() {
         try {
             borrowingService.updateOverdueBorrowings();

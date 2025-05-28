@@ -1,5 +1,13 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.dataTransfer.BookRequest;
 import org.example.model.AbstractBook;
 import org.example.service.BookService;
@@ -15,6 +23,8 @@ import java.util.Map;
 // kontroler do zarzadzania ksiazkami
 @RestController
 @RequestMapping("/api/books")
+@Tag(name = "Books", description = "Book management operations")
+@SecurityRequirement(name = "basicAuth")
 public class BookController {
 
     private final BookService bookService;
@@ -24,15 +34,23 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    // zwraca wszystkie ksiazki (dostepne dla wszystkich uwierzytelnionych uzytkownikow)
+    // zwraca wszystkie ksiazki
     @GetMapping
+    @Operation(summary = "Get all books", description = "Returns list of all books in the system")
+    @ApiResponse(responseCode = "200", description = "Books retrieved successfully")
     public List<AbstractBook> getAllBooks() {
         return bookService.getAllBooks();
     }
 
-    // zwraca ksiazke po ID (dostepne dla wszystkich uwierzytelnionych uzytkownikow)
+    // zwraca ksiazke po ID
     @GetMapping("/{id}")
-    public ResponseEntity<AbstractBook> getBookById(@PathVariable Long id) {
+    @Operation(summary = "Get book by ID", description = "Returns a specific book by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book found"),
+            @ApiResponse(responseCode = "404", description = "Book not found")
+    })
+    public ResponseEntity<AbstractBook> getBookById(
+            @Parameter(description = "Book ID", required = true) @PathVariable Long id) {
         return bookService.getBookById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -41,6 +59,12 @@ public class BookController {
     // tworzy nowa ksiazke (tylko admin)
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Create new book", description = "Creates a new book (Admin only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid book data"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
     public ResponseEntity<?> createBook(@RequestBody BookRequest request) {
         try {
             AbstractBook book = bookService.createBook(
@@ -62,7 +86,16 @@ public class BookController {
     // aktualizuje istniejaca ksiazke (tylko admin)
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateBook(@PathVariable Long id, @RequestBody BookRequest request) {
+    @Operation(summary = "Update book", description = "Updates an existing book (Admin only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Book not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid book data"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
+    public ResponseEntity<?> updateBook(
+            @Parameter(description = "Book ID", required = true) @PathVariable Long id,
+            @RequestBody BookRequest request) {
         try {
             AbstractBook book = bookService.updateBook(
                     id,
@@ -87,7 +120,14 @@ public class BookController {
     // usuwa ksiazke (tylko admin)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteBook(@PathVariable Long id) {
+    @Operation(summary = "Delete book", description = "Deletes a book (Admin only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Book not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied - Admin role required")
+    })
+    public ResponseEntity<?> deleteBook(
+            @Parameter(description = "Book ID", required = true) @PathVariable Long id) {
         try {
             bookService.deleteBook(id);
             Map<String, String> response = new HashMap<>();
@@ -100,20 +140,28 @@ public class BookController {
         }
     }
 
-    // wyszukuje ksiazki (dostepne dla wszystkich uwierzytelnionych uzytkownikow)
+    // wyszukuje ksiazki
     @GetMapping("/search")
-    public List<AbstractBook> searchBooks(@RequestParam(required = false) String q) {
+    @Operation(summary = "Search books", description = "Search books by title, author, or genre")
+    @ApiResponse(responseCode = "200", description = "Search results returned")
+    public List<AbstractBook> searchBooks(
+            @Parameter(description = "Search term") @RequestParam(required = false) String q) {
         return bookService.searchBooks(q);
     }
 
-    // zwraca ksiazki po gatunku (dostepne dla wszystkich uwierzytelnionych uzytkownikow)
+    // zwraca ksiazki po gatunku
     @GetMapping("/genre/{genre}")
-    public List<AbstractBook> getBooksByGenre(@PathVariable String genre) {
+    @Operation(summary = "Get books by genre", description = "Returns books of a specific genre")
+    @ApiResponse(responseCode = "200", description = "Books retrieved successfully")
+    public List<AbstractBook> getBooksByGenre(
+            @Parameter(description = "Genre name", required = true) @PathVariable String genre) {
         return bookService.getBooksByGenre(genre);
     }
 
-    // zwraca tylko dostepne ksiazki (dostepne dla wszystkich uwierzytelnionych uzytkownikow)
+    // zwraca tylko dostepne ksiazki
     @GetMapping("/available")
+    @Operation(summary = "Get available books", description = "Returns books that are available for borrowing")
+    @ApiResponse(responseCode = "200", description = "Available books retrieved successfully")
     public List<AbstractBook> getAvailableBooks() {
         return bookService.getAvailableBooks();
     }

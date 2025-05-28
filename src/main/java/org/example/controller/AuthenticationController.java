@@ -1,5 +1,11 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.dataTransfer.AuthenticationRequest;
 import org.example.dataTransfer.RegistrationRequest;
 import org.example.model.User;
@@ -18,9 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
-// kontrole do uwiezytelniania
+// kontroler do uwierzytelniania
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "User registration and login operations")
 public class AuthenticationController {
 
     private final UserService userService;
@@ -32,8 +39,15 @@ public class AuthenticationController {
         this.authenticationManager = authenticationManager;
     }
 
-    // rejestrujemy nowego uzytkownika , zwracamy dane nowego usera
+    // rejestrujemy nowego uzytkownika, zwracamy dane nowego usera
     @PostMapping("/register")
+    @Operation(summary = "Register new user", description = "Creates a new user account with USER role")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User registered successfully",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Username or email already exists",
+                    content = @Content(mediaType = "application/json"))
+    })
     public ResponseEntity<?> register(@RequestBody RegistrationRequest request) {
         try {
             User user = userService.registerUser(
@@ -57,8 +71,15 @@ public class AuthenticationController {
         }
     }
 
-    // uwiezytelniamy uzytkownika , zwracamy dane uzytkownika
+    // uwierzytelniamy uzytkownika, zwracamy dane uzytkownika
     @PostMapping("/login")
+    @Operation(summary = "User login", description = "Authenticates user and returns user information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Login successful",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Authentication failed",
+                    content = @Content(mediaType = "application/json"))
+    })
     public ResponseEntity<?> login(@RequestBody AuthenticationRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
