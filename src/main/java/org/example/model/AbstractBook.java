@@ -1,5 +1,6 @@
 package org.example.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,6 +35,7 @@ public abstract class AbstractBook {
     private Integer totalCopies;
 
     // relacja jeden do wielu z tabela Borrowing
+    @JsonIgnore
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Borrowing> borrowings = new HashSet<>();
 
