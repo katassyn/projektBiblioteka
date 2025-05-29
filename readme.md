@@ -63,10 +63,12 @@ Wszystkie operacje na bazie danych realizowane są poprzez repozytoria Spring Da
 - `UserRepository`
 - `BookRepository`
 - `BorrowingRepository`
+
 ## Struktura bazy danych
 
 ### Diagram ERD
-![[diagram 1.png]]
+![Diagram ERD bazy danych](diagram-1.png)
+
 ### Tabele
 
 #### users
@@ -103,6 +105,7 @@ Wszystkie operacje na bazie danych realizowane są poprzez repozytoria Spring Da
 - `updated_at` (TIMESTAMP)
 
 ## Instrukcja uruchomienia
+
 ### Uruchomienie z Dockerem
 
 1. Sklonuj repozytorium:
@@ -149,27 +152,31 @@ docker-compose up -d
 ## Przykłady użycia
 
 ### Rejestracja użytkownika
-![[Pasted image 20250529164620.png]]
-![[Pasted image 20250529164610.png]]
+![Formularz rejestracji](Pasted-image-20250529164620.png)
+![Potwierdzenie rejestracji](Pasted-image-20250529164610.png)
 
 ### Logowanie
-![[Pasted image 20250529164635.png]]
+![Formularz logowania](Pasted-image-20250529164635.png)
 
 ### Przeglądanie książek
-![[Pasted image 20250529164749.png]]
-![[Pasted image 20250529164800.png]]
+![Lista książek](Pasted-image-20250529164749.png)
+![Szczegóły książki](Pasted-image-20250529164800.png)
+
 ### Wypożyczanie książki
-![[Pasted image 20250529164843.png]]
-![[Pasted image 20250529170443.png]]
+![Proces wypożyczania](Pasted-image-20250529164843.png)
+![Potwierdzenie wypożyczenia](Pasted-image-20250529170443.png)
+
 ## Domyślni użytkownicy
 
 Aplikacja zawiera dwóch domyślnych użytkowników:
+
 ### Administrator
 
 - **Login**: `admin`
 - **Hasło**: `admin123`
 - **Email**: `admin@bookstore.com`
 - **Rola**: ADMIN
+
 ### Użytkownik testowy
 
 - **Login**: `user`
@@ -188,7 +195,9 @@ mvn test
 ### Pokrycie kodu
 
 Projekt zawiera testy jednostkowe i integracyjne zapewniające pokrycie kodu na poziomie 80%+.
-![[Pasted image 20250529165309.png]]
+
+![Raport pokrycia testów](Pasted-image-20250529165309.png)
+
 ## Struktura projektu
 
 ```
@@ -207,6 +216,7 @@ src/
 │       └── application.properties
 └── test/                    # Testy jednostkowe i integracyjne
 ```
+
 ## Funkcjonalności bezpieczeństwa
 
 - **Szyfrowanie haseł** - BCrypt
